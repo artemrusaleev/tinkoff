@@ -1,100 +1,102 @@
 <template>
   <div class="main-page">
-    <v-form ref="form" v-model="valid">
+    <v-form v-show="step === 1" ref="form" v-model="valid">
       <v-text-field
-        v-model="token"
-        :rules="tokenRules"
-        label="Token"
+        v-model="login"
+        :rules="loginRules"
+        label="Login"
+        required
+      ></v-text-field>
+      <v-text-field
+        v-model="password"
+        :rules="passwordRules"
+        label="Password"
         required
       ></v-text-field>
       <v-btn :disabled="!valid" color="success" class="mr-4" @click="submit">
         Submit
+      </v-btn>
+      <v-btn color="error" class="mr-4" @click="reset"> Reset Form </v-btn>
+    </v-form>
+    <v-form v-show="step === 2" ref="form" v-model="valid">
+      <v-text-field
+        v-model="tableId"
+        :rules="tableIdRules"
+        label="Tinkoff JSON DATA"
+        required
+      ></v-text-field>
+      <v-btn
+        :disabled="!valid"
+        color="success"
+        class="mr-4"
+        @click="checkJsonData"
+      >
+        Check JSON DATA
+      </v-btn>
+      <v-btn
+        :disabled="!valid"
+        color="success"
+        class="mr-4"
+        @click="sendJsonData"
+      >
+        Send JSON DATA
       </v-btn>
     </v-form>
   </div>
 </template>
 
 <script>
+import { postData } from '~/utils/postData'
 export default {
   data: () => ({
-    valid: true,
     token: '',
-    tokenRules: [(v) => !!v || 'Login is required'],
+    valid: false,
+    login: '',
+    loginRules: [(v) => !!v || 'Login is required'],
+    password: '',
+    passwordRules: [(v) => !!v || 'Password is required'],
+    tableId: '',
+    tableIdRules: [(v) => !!v || 'Table ID is required'],
+    step: 1,
+    resultArray: [],
   }),
 
   methods: {
     async submit() {
-      if (this.$refs.form.validate()) {
-        const myHeaders = new Headers()
-        myHeaders.append(
-          'Authorization',
-          'Bearer 9c8e141c701a488f1c86cb9c782e17a0'
-        )
-        myHeaders.append(
-          'Cookie',
-          'JSESSIONID=97F3D89C7B9CE220D138B413694E3756'
-        )
-        const body = {
-          billingDescriptor: 'narodsushi',
-          fullName: 'ИП ЛАЕР ПАВЕЛ ПАВЛОВИЧ',
-          name: 'ИП ЛАЕРПАВЕЛ ПАВЛОВИЧ',
-          inn: 190701090299,
-          kpp: '-',
-          ogrn: 322190000015390,
-          addresses: [
-            {
-              type: 'legal',
-              zip: '655350',
-              country: 'RUS',
-              city: 'с. Знаменка',
-              street: 'УЛ НАГОРНАЯ, дом 24',
-            },
-          ],
-          email: 'laer_1981@mail.ru',
-          founders: {
-            individuals: [
-              {
-                firstName: 'ПАВЕЛ',
-                lastName: 'ЛАЕР',
-                citizenship: 'С ЗНАМЕНКА',
-                address: 'УЛ НАГОРНАЯ, дом 24',
-              },
-            ],
-          },
-          ceo: {
-            address: 'УЛ НАГОРНАЯ, дом 24',
-            firstName: 'ПАВЕЛ',
-            lastName: 'ЛАЕР',
-            middleName: '',
-            phone: '79833728965',
-            country: 'RUS',
-          },
-          siteUrl: 'https://narodsushi.ru',
-          bankAccount: {
-            account: '40802810700003555415',
-            korAccount: '30101810145250000974',
-            bankName: 'АО «Тинькофф Банк»',
-            bik: 44525974,
-            details: '',
-            tax: 1,
-          },
-          fiscalization: {
-            company: 'АТОЛ онлайн',
-            notifyUrl: '',
-          },
-        }
-        const fetchOptions = {
-          method: 'POST',
-          headers: myHeaders,
-          body: JSON.stringify(body),
-        }
-        const req = await fetch(
-          'https://sm-register.tinkoff.ru/register',
-          fetchOptions
-        )
-        const response = await req.text()
-        console.log(response)
+      try {
+        const { token } = await postData('/auth', {
+          login: this.login,
+          password: this.password,
+        })
+        this.token = token
+        this.step++
+      } catch (err) {
+        alert(err)
       }
+    },
+    async checkJsonData() {
+      window.open(`/getJson?tableId=${this.tableId}`, '_blank').focus()
+    },
+    async sendJsonData() {
+      try {
+        const req = await fetch(`/getJson?tableId=${this.tableId}`)
+        const data = await req.json()
+        if (data) {
+          data.forEach(async (el) => {
+            const req = await postData('/sendJson', { ...el })
+            const response = await req.json()
+            if (response) {
+              this.resultArray.push(response)
+              console.log(response)
+            }
+          })
+        }
+      } catch (err) {
+        alert(err)
+      }
+    },
+    reset() {
+      this.$refs.form.reset()
     },
   },
 }
