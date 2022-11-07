@@ -144,7 +144,12 @@ mongoose.connect(
     })
 
     app.post('/sendJson', async (req, res, next) => {
-      const { token, data } = req.body
+      const { token, data, orgName } = req.body
+      let oldBillingDesk = null
+      if (orgName) {
+        oldBillingDesk = data.billingDescriptor
+        data.billingDescriptor = orgName
+      }
       if (!token || !data) {
         res.status(401).send({
           error: 'No token or data detected',
@@ -178,7 +183,7 @@ mongoose.connect(
           } else {
             await RestErrors.create({
               inn: req.body.data.inn,
-              name: req.body.data.billingDescriptor,
+              name: oldBillingDesk || req.body.data.billingDescriptor,
               tinkoffErrors: JSON.stringify(response.body),
             })
           }
@@ -194,7 +199,7 @@ mongoose.connect(
           } else {
             await Restaurant.create({
               inn: req.body.data.inn,
-              name: req.body.data.billingDescriptor,
+              name: oldBillingDesk || req.body.data.billingDescriptor,
               data: JSON.stringify(response.body),
             })
           }
@@ -230,9 +235,11 @@ mongoose.connect(
     })
 
     app.get('/allRests', async (req, res, next) => {
-      const rests = await RestErrors.find({})
+      const errors = await RestErrors.find({})
+      const rests = await Restaurant.find({})
       res.send({
-        rests,
+        errors: errors,
+        rests: rests,
       })
     })
   }

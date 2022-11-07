@@ -95,11 +95,17 @@ export default {
         const data = await req.json()
         if (data) {
           data.forEach(async (el) => {
-            this.useOrgName ? (el.billingDescriptor = this.orgName) : false
-            const req = await postData('/sendJson', {
-              data: { ...el },
-              token: this.token,
-            })
+            const body = this.useOrgName
+              ? {
+                  data: { ...el },
+                  token: this.token,
+                  orgName: this.orgName,
+                }
+              : {
+                  data: { ...el },
+                  token: this.token,
+                }
+            const req = await postData('/sendJson', body)
             const response = await req
             if (response) {
               this.resultArray.push(response)
