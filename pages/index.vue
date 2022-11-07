@@ -76,7 +76,7 @@ export default {
   methods: {
     async submit() {
       try {
-        const { token } = postData('/auth', {
+        const { token } = await postData('/auth', {
           login: this.login,
           password: this.password,
         })
