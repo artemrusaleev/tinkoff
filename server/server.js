@@ -178,6 +178,7 @@ mongoose.connect(
           } else {
             await RestErrors.create({
               inn: req.body.data.inn,
+              name: req.body.billingDescriptor,
               tinkoffErrors: JSON.stringify(response.body),
             })
           }
@@ -193,6 +194,7 @@ mongoose.connect(
           } else {
             await Restaurant.create({
               inn: req.body.inn,
+              name: req.body.billingDescriptor,
               data: JSON.stringify(response.body),
             })
           }
@@ -202,14 +204,26 @@ mongoose.connect(
     })
 
     app.get('/restData', async (req, res, next) => {
-      const rest = await Restaurant.findOne({ inn: req.query.inn })
+      const { inn, name } = req.query
+      if (!inn || !name) {
+        res.status(418)
+        return
+      }
+      const rest = await Restaurant.findOne(inn ? { inn: inn } : { name: name })
       res.send({
         rest,
       })
     })
 
     app.get('/restErrors', async (req, res, next) => {
-      const errors = await RestErrors.findOne({ inn: req.query.inn })
+      const { inn, name } = req.query
+      if (!inn || !name) {
+        res.status(418)
+        return
+      }
+      const errors = await RestErrors.findOne(
+        inn ? { inn: inn } : { name: name }
+      )
       res.send({
         errors,
       })
