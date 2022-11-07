@@ -178,7 +178,7 @@ mongoose.connect(
           } else {
             await RestErrors.create({
               inn: req.body.data.inn,
-              name: req.body.billingDescriptor,
+              name: req.body.data.billingDescriptor,
               tinkoffErrors: JSON.stringify(response.body),
             })
           }
@@ -193,8 +193,8 @@ mongoose.connect(
             )
           } else {
             await Restaurant.create({
-              inn: req.body.inn,
-              name: req.body.billingDescriptor,
+              inn: req.body.data.inn,
+              name: req.body.data.billingDescriptor,
               data: JSON.stringify(response.body),
             })
           }
