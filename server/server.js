@@ -196,6 +196,7 @@ mongoose.connect(
               { inn: req.body.data.inn },
               { data: JSON.stringify(response.body) }
             )
+            await RestErrors.findOneAndRemove({ inn: req.body.data.inn })
           } else {
             await Restaurant.create({
               inn: req.body.data.inn,
