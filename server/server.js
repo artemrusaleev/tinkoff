@@ -228,6 +228,13 @@ mongoose.connect(
         errors,
       })
     })
+
+    app.get('/allRests', async (req, res, next) => {
+      const rests = await RestErrors.find({})
+      res.send({
+        rests,
+      })
+    })
   }
 )
 module.exports = app
