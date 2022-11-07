@@ -20,11 +20,19 @@
     </v-form>
     <v-form v-show="step === 2" ref="form" v-model="valid">
       <v-text-field
+        v-if="useOrgName"
+        v-model="orgName"
+        :rules="orgNameRules"
+        label="Org name for all rests"
+        required
+      ></v-text-field>
+      <v-text-field
         v-model="tableId"
         :rules="tableIdRules"
         label="Tinkoff JSON DATA"
         required
       ></v-text-field>
+      <v-checkbox v-model="useOrgName" label="Use orgname for all rests" />
       <v-btn
         :disabled="!valid"
         color="success"
@@ -33,6 +41,7 @@
       >
         Check JSON DATA
       </v-btn>
+
       <v-btn
         :disabled="!valid"
         color="success"
@@ -59,19 +68,22 @@ export default {
     tableIdRules: [(v) => !!v || 'Table ID is required'],
     step: 1,
     resultArray: [],
+    useOrgName: false,
+    orgName: '',
+    orgNameRules: [(v) => !!v || 'orgNameis required'],
   }),
 
   methods: {
     async submit() {
       try {
-        const { token } = await postData('/auth', {
+        const { token } = postData('/auth', {
           login: this.login,
           password: this.password,
         })
         this.token = token
         this.step++
       } catch (err) {
-        alert(err)
+        console.log(err)
       }
     },
     async checkJsonData() {
@@ -83,11 +95,14 @@ export default {
         const data = await req.json()
         if (data) {
           data.forEach(async (el) => {
-            const req = await postData('/sendJson', { ...el })
-            const response = await req.json()
+            this.useOrgName ? (el.billingDescriptor = this.orgName) : false
+            const req = await postData('/sendJson', {
+              data: { ...el },
+              token: this.token,
+            })
+            const response = await req
             if (response) {
               this.resultArray.push(response)
-              console.log(response)
             }
           })
         }
