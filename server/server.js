@@ -210,14 +210,13 @@ mongoose.connect(
 
     app.get('/restData', async (req, res, next) => {
       const { inn, name } = req.query
-      if (!inn || !name) {
-        res.status(418)
-        return
-      }
       const rest = await Restaurant.findOne(inn ? { inn: inn } : { name: name })
-      res.send({
-        rest,
-      })
+      if (!rest) {
+        res.status(418).send({
+          error: 'dont find any data',
+        })
+      }
+      res.send(rest)
     })
 
     app.get('/restErrors', async (req, res, next) => {
