@@ -2,14 +2,10 @@
   "version": 2,
   "builds": [
     {
-      "src": "server/*.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "nuxt.config.ts",
+      "src": "nuxt.config.js",
       "use": "@nuxtjs/vercel-builder",
       "config": {
-        "serverFiles": ["server/*"]
+        "serverFiles": ["server/**"]
       }
     }
   ]
