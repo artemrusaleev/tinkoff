@@ -11,6 +11,7 @@
     "lintfix": "prettier --write --list-different ."
   },
   "dependencies": {
+    "@nuxtjs/vercel-builder": "^0.24.0",
     "core-js": "^3.19.3",
     "express": "^4.18.2",
     "mongoose": "^6.7.1",
